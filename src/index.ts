@@ -37,10 +37,9 @@ export class DescriptionResource {
     }
 }
 
-enum ChannelType {
+export enum ChannelType {
     WebSocketChannel2023,
 }
-
 
 export class SubscriptionService {
     id: string
