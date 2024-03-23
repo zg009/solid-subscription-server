@@ -143,7 +143,7 @@ export class NotificationChannel {
     }
 }
 
-enum NotificationTypes {
+export enum NotificationTypes {
     Update,
     Read,
     Create,
