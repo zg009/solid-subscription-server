@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "cross-env mocha --require ts-node/register 'test/**/*.ts'"
+    "test": "mocha"
   },
   "keywords": [],
   "author": "",

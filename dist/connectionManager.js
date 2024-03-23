@@ -1,7 +1,9 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.WebSocketConnectionManager = void 0;
 class ChannelBundler {
+    id;
+    url;
+    channelType;
+    ws;
+    active;
     constructor(id, url, channelType) {
         this.id = id;
         this.url = url;
@@ -18,7 +20,8 @@ class ChannelBundler {
         this.active = !this.active;
     }
 }
-class WebSocketConnectionManager {
+export class WebSocketConnectionManager {
+    channelBundlers;
     constructor() {
         this.channelBundlers = [];
     }
@@ -32,4 +35,3 @@ class WebSocketConnectionManager {
         }
     }
 }
-exports.WebSocketConnectionManager = WebSocketConnectionManager;

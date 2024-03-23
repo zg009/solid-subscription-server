@@ -1,31 +1,29 @@
 export const notificationContext = "https://www.w3.org/ns/solid/notification/v1"
 export const activityStreamsContext = "https://www.w3.org/ns/activitystreams"
 
-type Channel = {
-    channel: string;
-}
-
-type Subscription = {
-    subscription: string;
-}
-
 export class DescriptionResource {
     id: string
-    channels: Channel[]
-    subscriptions: Subscription[]
+    channels?: NotificationChannel[]
+    subscriptions?: SubscriptionService[]
     
     constructor(id: string) {
         this.id = id
-        this.channels = []
-        this.subscriptions = []
+        // this.channels = []
+        // this.subscriptions = []
     }
 
-    addChannel = (channel: Channel) => {
+    addChannel = (channel: NotificationChannel) => {
+        if (!this.channels) {
+            this.channels = []
+        }
         this.channels.push(channel)
         return this
     }
 
-    addSubscription = (subscription: Subscription) => {
+    addSubscription = (subscription: SubscriptionService) => {
+        if (!this.subscriptions) {
+            this.subscriptions = []
+        }
         this.subscriptions.push(subscription)
         return this
     }
@@ -58,16 +56,18 @@ export enum ChannelType {
 export class SubscriptionService {
     id: string
     channelType: ChannelType
-    features: Object
+    features?: string[]
 
     constructor(id: string, channelType: ChannelType) {
         this.id = id
         this.channelType = channelType
-        this.features = {}
     }
 
-    addFeatures = (feature: Object) => {
-        Object.assign(this.features, feature)
+    addFeatures = (feature: string) => {
+        if (!this.features) {
+            this.features = []
+        }
+        this.features.push(feature)
         return this
     }
 

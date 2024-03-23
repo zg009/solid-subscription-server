@@ -1,4 +1,4 @@
-import { ChannelType } from ".";
+import { ChannelType } from "./index.ts";
 
 class ChannelBundler {
     id: string
