@@ -31,7 +31,6 @@ export class DescriptionResource {
             "@context": [notificationContext],
             "id": this.id,
         }
-        base;
         if (this.subscriptions) {
             Object.assign(base, {"subscription" : this.subscriptions})
         }
