@@ -10,14 +10,24 @@ type Subscription = {
 }
 
 export class DescriptionResource {
-    id: string;
-    channels: Channel[];
-    subscriptions: Subscription[];
+    id: string
+    channels: Channel[]
+    subscriptions: Subscription[]
     
-    constructor(id: string, channels: Channel[], subscriptions: Subscription[]) {
-        this.id = id;
-        this.channels = channels ;
-        this.subscriptions = subscriptions;
+    constructor(id: string) {
+        this.id = id
+        this.channels = []
+        this.subscriptions = []
+    }
+
+    addChannel = (channel: Channel) => {
+        this.channels.push(channel)
+        return this
+    }
+
+    addSubscription = (subscription: Subscription) => {
+        this.subscriptions.push(subscription)
+        return this
     }
 
     generateDoc = () => {
@@ -25,20 +35,24 @@ export class DescriptionResource {
             "@context": [notificationContext],
             "id": this.id,
         }
-        let newBase = base;
+        base;
         if (this.subscriptions) {
-            newBase = Object.assign(base, {"subscription" : this.subscriptions})
+            Object.assign(base, {"subscription" : this.subscriptions})
         }
         if (this.channels) {
-            newBase = Object.assign(base, {"channel" : this.channels})
+            Object.assign(base, {"channel" : this.channels})
         }
 
-        return newBase;
+        return base;
     }
 }
 
 export enum ChannelType {
     WebSocketChannel2023,
+    EventSourceChannel2023,
+    LDNChannel2023,
+    StreamingHTTPChannel2023,
+    WebhookChannel2023
 }
 
 export class SubscriptionService {
@@ -46,10 +60,15 @@ export class SubscriptionService {
     channelType: ChannelType
     features: Object
 
-    constructor(id: string, channelType: ChannelType, features: {}) {
-        this.id = id;
-        this.channelType = channelType || ChannelType.WebSocketChannel2023;
-        this.features = features;
+    constructor(id: string, channelType: ChannelType) {
+        this.id = id
+        this.channelType = channelType
+        this.features = {}
+    }
+
+    addFeatures = (feature: Object) => {
+        Object.assign(this.features, feature)
+        return this
     }
 
     generateDoc = () => {
@@ -58,11 +77,10 @@ export class SubscriptionService {
             "id": this.id,
             "channelType": this.channelType,
         }
-        let newBase = base;
         if (this.features) {
-            newBase = Object.assign(base, {"feature": this.features});
+            Object.assign(base, {"feature": this.features})
         }
-        return newBase
+        return base
     }
 }
 
@@ -75,21 +93,31 @@ export class NotificationChannel {
     sendTo?: string
     sender?: string
 
-    constructor(id: string, 
-        type: ChannelType, 
-        topics: string[], 
-        features: Object, 
-        receiveFrom?: string,
-        sendTo?: string,
-        sender?: string) {
-        this.id = id;
-        this.type = type || ChannelType.WebSocketChannel2023;
-        this.topics = topics;
-        this.features = features ;
-        // do these really need to be stored or can they be assigned dynamically?
-        this.receiveFrom = receiveFrom;
-        this.sendTo = sendTo;
-        this.sender = sender;
+    constructor(id: string, type: ChannelType, topic: string ) {
+        this.id = id
+        this.type = type
+        this.topics = [topic]
+        this.features = {}
+    }
+
+    addFeature = (feature: Object) => {
+        Object.assign(this.features, feature)
+        return this
+    }
+
+    addSendTo = (sendTo: string) => {
+        this.sendTo = sendTo
+        return this
+    }
+
+    addReceiveFrom = (receiveFrom: string) => {
+        this.receiveFrom = receiveFrom
+        return this
+    }
+
+    addSender = (sender: string) => {
+        this.sender = sender
+        return this
     }
 
     generateDoc = () => {
@@ -97,22 +125,21 @@ export class NotificationChannel {
             "@context": [notificationContext],
             "id": this.id,
             "type": this.type,
-            "topic": this.topics,
+            "topic": this.topics
         }
-        let newBase = base;
         if (this.features) {
-            newBase = Object.assign(base, this.features);
+            Object.assign(base, this.features)
         }
         if (this.receiveFrom) {
-            newBase = Object.assign(base, {"receiveFrom": this.receiveFrom});
+            Object.assign(base, {"receiveFrom": this.receiveFrom})
         }
         if (this.sendTo) {
-            newBase = Object.assign(base, {"sendTo": this.sendTo});
+            Object.assign(base, {"sendTo": this.sendTo})
         }
         if (this.sender) {
-            newBase = Object.assign(base, {"sender": this.sender});
+            Object.assign(base, {"sender": this.sender})
         }
-        return newBase; 
+        return base 
     }
 }
 
@@ -132,13 +159,21 @@ export class NotificationMessage {
     target?: string
     state?: string
 
-    constructor(id: string, type: NotificationTypes, obj: string, published?: string, target?: string, state?: string) {
+    constructor(id: string, type: NotificationTypes, obj: string, published?: string) {
         this.id = id;
         this.type = type;
         this.obj = obj;
         this.published = published || this._getCurrentDateString();
-        this.target = target;
-        this.state = state;
+    }
+
+    addState = (state: string) => {
+        this.state = state
+        return this
+    }
+
+    addTarget = (target: string) => {
+        this.target = target
+        return this
     }
 
     _getCurrentDateString = () => {
@@ -151,15 +186,14 @@ export class NotificationMessage {
             "id": this.id,
             "type": this.type,
             "object": this.obj,
-            "published": this.published,
+            "published": this.published
         }
-        let newBase = base;
         if (this.target) {
-            newBase = Object.assign(base, {"target": this.target})
+            Object.assign(base, {"target": this.target})
         }
         if (this.state) {
-            newBase = Object.assign(base, {"state": this.state});
+            Object.assign(base, {"state": this.state})
         }
-        return newBase
+        return base
     }
 }
