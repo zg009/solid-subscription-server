@@ -8,8 +8,6 @@ export class DescriptionResource {
     
     constructor(id: string) {
         this.id = id
-        // this.channels = []
-        // this.subscriptions = []
     }
 
     addChannel = (channel: NotificationChannel) => {
