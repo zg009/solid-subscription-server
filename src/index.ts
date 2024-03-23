@@ -177,7 +177,7 @@ export class NotificationMessage {
         return new Date().toISOString();
     }
 
-    getContext = () => {
+    generateDoc = () => {
         let base = {
             "@context": [notificationContext, activityStreamsContext],
             "id": this.id,

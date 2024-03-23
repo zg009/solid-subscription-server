@@ -22,8 +22,8 @@ class ChannelBundler {
 
     sendMessage(message: NotificationMessage) {
         if (this.active && this.ws) {
-            console.log(message.getContext())
-            this.ws.send(JSON.stringify(message.getContext()))
+            // console.log(message.generateDoc())
+            this.ws.send(JSON.stringify(message.generateDoc()))
         }
     }
 
