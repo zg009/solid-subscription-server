@@ -1,12 +1,103 @@
-import express from "express"
+import express, { Request, Response, NextFunction } from "express"
 import { WebSocketConnectionManager } from "../connectionManager.js"
-import { NotificationMessage, NotificationTypes } from "../index.js"
+import { ChannelType, DescriptionResource, NotificationMessage, NotificationTypes, SubscriptionService } from "../index.js"
 
 const app = express()
 const solidNS = new WebSocketConnectionManager()
+
+function createStorageDescriptionMiddleware(link: string) {
+  return function(req: Request, res: Response, next: NextFunction) {
+    res.appendHeader('Link', `<${link}>; rel="http://www.w3.org/ns/solid/terms#storageDescription"`)
+    next()
+  }
+}
+
+const baseUri = `http://localhost:3000/`
+const descriptionResourcePath = `descriptionResource`
+const descriptionLink = `${baseUri}${descriptionResourcePath}`
+app.use(createStorageDescriptionMiddleware(descriptionLink))
+
+const subscriptionServicePath = `subscription`
+const subscriptionServiceUri = `${baseUri}${subscriptionServicePath}`
+const subscriptionService = new SubscriptionService(subscriptionServiceUri, ChannelType.WebSocketChannel2023)
+subscriptionService.addFeatures("rate")
+subscriptionService.addFeatures("state")
+
+const descriptionResource = new DescriptionResource(descriptionLink);
+descriptionResource.addSubscription(subscriptionService)
+
+const JSONLD_BASE_URI = 'http://www.w3.org/ns/json-ld#'
+const JSONLD_PROFILE_TYPES = [
+  `${JSONLD_BASE_URI}expanded`,
+  `${JSONLD_BASE_URI}compacted`,
+  `${JSONLD_BASE_URI}context`,
+  `${JSONLD_BASE_URI}flatted`,
+  `${JSONLD_BASE_URI}frame`,
+  `${JSONLD_BASE_URI}framed`,
+]
+
+function containsJsonLDHeader(req: Request, header: string) {
+  const jsonLDHeader = req.headers[header]
+  return jsonLDHeader?.includes('application/ld+json') ? true : false
+}
+
+function jsonLDContentTypeMiddleware(req: Request, res: Response, next: NextFunction) {
+
+}
+
+function jsonLDHeaderMiddleware(req: Request, res: Response, next: NextFunction) {
+
+}
+
+function hasValidProfileParameters(header: string, values: string[]) {
+  if (!header.includes("profile")) {
+    return true
+  }
+  const idx = header.indexOf("profile")
+  let end = header.substring(idx).indexOf(";")
+  if (end == -1) {
+    end = header.length
+  }
+  let profileParam = header.substring(idx, end)
+  let [profile, paramValue] = profileParam.split('=')
+  return values.includes(paramValue)
+}
+
+const createValidProfileTypesMiddleware = (header: string, values: string[] = JSONLD_PROFILE_TYPES) => {
+  return function(req: Request, res: Response, next: NextFunction) {
+    if (!containsJsonLDHeader(req, header)) {
+      next()
+    }
+    const jsonLDHeader = req.headers[header] as string
+    if (!hasValidProfileParameters(jsonLDHeader, values)) {
+      res.status(415).send({ message: "invalid profile parameter in application/ld+json header"})
+    }
+    next()
+  }
+}
+
+app.get(descriptionResourcePath, (req, res) => {
+  res.send(JSON.stringify(descriptionResource.generateDoc()))
+})
+
+app.get(subscriptionServicePath, (req, res) => {
+
+})
+
+app.head(subscriptionServicePath, (req, res) => {
+
+})
+
+app.options(subscriptionServicePath, (req, res) => {
+
+})
+
+app.post(subscriptionServicePath, (req, res) => {
+
+})
+
 app.get('/*', (req, res, next) => {
     console.log('in the middleware')
-    solidNS.getDescriptionResource(req.url)
     next()
 })
 
@@ -37,6 +128,8 @@ app.delete('/*', (req, res) => {
     console.log('did an delete')
     res.sendStatus(200)
 })
+
+
 
 // app.use(() => {
 //   const solidNS = new WebSocketConnectionManager()

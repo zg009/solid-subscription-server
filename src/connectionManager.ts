@@ -53,26 +53,15 @@ export class WebSocketConnectionManager {
         this.uris = []
     }
 
-    getDescriptionResource(url: string): DescriptionResource {
-        const notifChannel = 
-            new NotificationChannel(`${url}.nc`, ChannelType.WebSocketChannel2023, url)
-            .addReceiveFrom(`ws://localhost:6060`)
-        console.log('generated notif channel')
-        const subscriptionService = new SubscriptionService(`${url}.ss`, ChannelType.WebSocketChannel2023)
-        console.log('generated sub service')
-        const ds = new DescriptionResource(`${url}.description`)
-        console.log('generated description')
-        ds.addChannel(notifChannel)
-        ds.addSubscription(subscriptionService)
-        // console.log(ds.generateDoc())
-
-        const cb = new ChannelBundler(uuidv4(), url, `ws://localhost:6060`, ChannelType.WebSocketChannel2023)
-        console.log(`channelbundler url: ${cb.url}`)
-        cb.toggle()
-        this.addChannelBundler(cb)
-        console.log(`${cb.active}`)
-        return ds;
-    }
+    // getDescriptionResource(url: string): DescriptionResource {
+        
+    //     const cb = new ChannelBundler(uuidv4(), url, `ws://localhost:6060`, ChannelType.WebSocketChannel2023)
+    //     console.log(`channelbundler url: ${cb.url}`)
+    //     cb.toggle()
+    //     this.addChannelBundler(cb)
+    //     console.log(`${cb.active}`)
+    //     // return ds;
+    // }
 
     addChannelBundler(cb: ChannelBundler) {
         this.uris.push(cb.url)
