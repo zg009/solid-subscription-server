@@ -1,6 +1,7 @@
-import { ChannelType, DescriptionResource, NotificationChannel, NotificationMessage, SubscriptionService } from "./index.js"
-import {v4 as uuidv4} from 'uuid'
-import {WebSocket, WebSocketServer} from 'ws'
+import { ChannelType } from './types/utils.js'
+import { NotificationMessage } from './types/notificationMessage.js'
+import { v4 as uuidv4 } from 'uuid'
+import { WebSocket, WebSocketServer } from 'ws'
 
 class ChannelBundler {
     id: string
