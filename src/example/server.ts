@@ -1,6 +1,9 @@
 import express, { Request, Response, NextFunction } from "express"
 import { WebSocketConnectionManager } from "../connectionManager.js"
-import { ChannelType, DescriptionResource, NotificationMessage, NotificationTypes, SubscriptionService } from "../index.js"
+import { ChannelType, NotificationTypes } from "./types/utils.js"
+import { SubscriptionService } from "./types/subscriptionService.js"
+import { DescriptionResource } from "./types/descriptionResource.js"
+import { NotificationMessage } from "./types/notificationMessage.js"
 
 const app = express()
 const solidNS = new WebSocketConnectionManager()
