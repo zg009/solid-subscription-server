@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { WebSocket, WebSocketServer } from 'ws'
 import { NotificationChannel } from './types/notificationChannel.js'
 
-class ChannelBundler {
+class LiveSolidSocket {
     id: string
     url: string
     channelType: ChannelType
@@ -17,7 +17,6 @@ class ChannelBundler {
         this.id = id
         this.url = url
         this.channelType = channelType
-        // this.ws = new WebSocket(wsUrl)
         this.wsUrl = wsUrl
         this.active = false
     }
@@ -25,7 +24,7 @@ class ChannelBundler {
     static createFromNotificationChannelDoc = (nc: NotificationChannel) => {
         const {id: url, type: channelType, topics, ...features} = nc
         // better way to determine http/https vs ws/wss in future
-        const cb = new ChannelBundler(uuidv4(), url, url.replace('http', 'ws'), channelType)
+        const cb = new LiveSolidSocket(uuidv4(), url, url.replace('http', 'ws'), channelType)
         return cb
     }
 
@@ -37,8 +36,28 @@ class ChannelBundler {
     }
 
     toggle() {
-        this.wss = new WebSocketServer({ port:6060 })
-        this.wss.on('connection', function connection(ws) {
+        
+        if (!this.active) {
+            this.ws = new WebSocket(this.wsUrl)
+        } else {
+            this.ws!!.close()
+        }
+        this.active = !this.active
+        
+    }
+}
+
+export class WebSocketConnectionManager {
+    liveSockets: LiveSolidSocket[]
+    uris: string[]
+    socketServer: WebSocketServer
+
+    constructor(port?: number) {
+        this.liveSockets = []
+        this.uris = []
+        const conn = port ? port : 6060
+        this.socketServer = new WebSocketServer({ port: conn })
+        this.socketServer.on('connection', function connection(ws) {
             // console.log(ws)
             
             ws.on('error', console.error);
@@ -48,18 +67,6 @@ class ChannelBundler {
             });
           
           });
-        this.ws = new WebSocket(this.wsUrl)
-        this.active = !this.active
-    }
-}
-
-export class WebSocketConnectionManager {
-    channelBundlers: ChannelBundler[]
-    uris: string[]
-
-    constructor() {
-        this.channelBundlers = []
-        this.uris = []
     }
 
     // getDescriptionResource(url: string): DescriptionResource {
@@ -72,20 +79,20 @@ export class WebSocketConnectionManager {
     //     // return ds;
     // }
 
-    addChannelBundler(cb: ChannelBundler) {
+    addChannelBundler(cb: LiveSolidSocket) {
         this.uris.push(cb.url)
-        this.channelBundlers.push(cb)
+        this.liveSockets.push(cb)
     }
 
     sendMessage(id: string, message: NotificationMessage) {
         console.log(`sendMessage id: ${id}`)
-        const cb = this.channelBundlers.filter(cb => {
-            console.log(`\tfilter id: ${cb.url}`)
-            return cb.url === id
+        const targetSocket = this.liveSockets.filter(ls => {
+            // console.log(`\tfilter id: ${ls.url}`)
+            return ls.url === id
         })
-        console.log(cb.length)
-        if (cb.length > 0) {
-            cb[0].sendMessage(message)
+        console.log(targetSocket.length)
+        if (targetSocket.length > 0) {
+            targetSocket[0].sendMessage(message)
         } else {
             throw new Error(`channel with id ${id} is not active`)
         }
