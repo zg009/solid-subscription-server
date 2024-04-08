@@ -23,11 +23,11 @@ describe('SubscriptionService type', () => {
         expect(ss.generateDoc()).toEqual(ssDoc)
     })
 
-    it('returns a turtle representation of the subscriptionService', async () => {
-        const ssDoc = {
+    // it.skip('returns a turtle representation of the subscriptionService', async () => {
+    //     const ssDoc = {
 
-        }
-        expect(await ss.asTurtle()).toEqual(ssDoc)
-    })
+    //     }
+    //     expect(await ss.asTurtle()).toEqual(ssDoc)
+    // })
 })
     

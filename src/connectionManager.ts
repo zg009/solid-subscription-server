@@ -2,6 +2,7 @@ import { ChannelType } from './types/utils.js'
 import { NotificationMessage } from './types/notificationMessage.js'
 import { v4 as uuidv4 } from 'uuid'
 import { WebSocket, WebSocketServer } from 'ws'
+import { NotificationChannel } from './types/notificationChannel.js'
 
 class ChannelBundler {
     id: string
@@ -19,6 +20,13 @@ class ChannelBundler {
         // this.ws = new WebSocket(wsUrl)
         this.wsUrl = wsUrl
         this.active = false
+    }
+
+    static createFromNotificationChannelDoc = (nc: NotificationChannel) => {
+        const {id: url, type: channelType, topics, ...features} = nc
+        // better way to determine http/https vs ws/wss in future
+        const cb = new ChannelBundler(uuidv4(), url, url.replace('http', 'ws'), channelType)
+        return cb
     }
 
     sendMessage(message: NotificationMessage) {

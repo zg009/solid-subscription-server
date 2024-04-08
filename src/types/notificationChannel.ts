@@ -57,4 +57,8 @@ export class NotificationChannel {
         }
         return base 
     }
+
+    create = () => {
+        
+    }
 }

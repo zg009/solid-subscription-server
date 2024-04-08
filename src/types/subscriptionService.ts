@@ -1,6 +1,6 @@
+import { NotificationChannel } from "./notificationChannel.js"
 import { ChannelType, notificationContext } from "./utils.js"
-import * as $rdf from "rdflib"
-import { ContextDefinition, compact } from "jsonld"
+import express, { NextFunction, Request, Response } from "express"
 
 export class SubscriptionService {
     id: string
@@ -32,19 +32,53 @@ export class SubscriptionService {
         return base
     }
 
-    async asTurtle(): Promise<string|Error> {
-        // thanks jeff https://forum.solidproject.org/t/is-there-a-converter-between-json-ld-and-turtle-n3/1817
-        let store = $rdf.graph()
-        return new Promise((resolve, reject) => {
-            $rdf.parse(JSON.stringify(this.generateDoc()), store, this.id, 'text/turtle', (error, kb) => {
-                if (error) reject(new Error(`error in 'parse' of 'asTurtle': ${error}`))
-                else $rdf.serialize(null, store, this.id, 'application/ld+json', (err, result) => {
-                    if (err) reject(new Error(`error in 'serialize' of 'asTurtle': ${err}`))
-                    else if (result === undefined) reject(new Error('error: serialize returned undefined'))
-                    else resolve(result)
-                })
-            })
-        })
-        
+    validateFromParams = (req: Request<{}, {}, NotificationChannel>) => {
+        if (req.headers["content-type"] !== "application/ld+json") {
+            throw new Error("cannot validate other types at the moment")
+        }
+        const body = req.body
+        const {id, type: channelType, topics, ...features} = body
+        if (!id || !channelType || topics.length < 1 || !this.isSupported(channelType)) {
+            throw new Error("missing id or channelType parameter")
+        }
+        return body
     }
+
+    // this handle method should probably be moved elsewhere
+    handle = (req: Request, res: Response) => {
+        try {
+            const body = this.validateFromParams(req)
+            const {id, type: channelType, topics, ...features} = body
+            // how to handle multiple topics?
+            // create multiple channels?
+            // there probably needs to be validation against the uri/id on the resource server...
+            const nc = new NotificationChannel(id, channelType, topics[0])
+            for (const feature in features) {
+                nc.addFeature(feature)
+            }
+        } catch (err) {
+            res.status(422).send('failed to validate request payload')
+        }
+    }
+
+    // dummy function, not sure where the impl should go
+    isSupported(ct: ChannelType): boolean {
+        return true
+    }
+
+    // async asTurtle(): Promise<string|Error> {
+    //     // thanks jeff https://forum.solidproject.org/t/is-there-a-converter-between-json-ld-and-turtle-n3/1817
+    //     let store = $rdf.graph()
+    //     return new Promise((resolve, reject) => {
+    //         $rdf.parse(JSON.stringify(this.generateDoc()), store, this.id, 'text/turtle', (error, kb) => {
+    //             if (error) reject(new Error(`error in 'parse' of 'asTurtle': ${error}`))
+    //             else $rdf.serialize(null, store, this.id, 'application/ld+json', (err, result) => {
+    //                 if (err) reject(new Error(`error in 'serialize' of 'asTurtle': ${err}`))
+    //                 else if (result === undefined) reject(new Error('error: serialize returned undefined'))
+    //                 else resolve(result)
+    //             })
+    //         })
+    //     })
+        
+    // }
 }
