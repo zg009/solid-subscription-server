@@ -1,6 +1,15 @@
 import { Request, Response } from "express";
-import { NotificationChannel } from "../types/notificationChannel.js";
 import * as $rdf from "rdflib"
+import { Quad_Object, Quad_Subject } from "rdflib/lib/tf-types.js";
+
+// TODO: add as a separate class
+// TODO: make errors directory
+export class ValidationError extends Error {
+    constructor(msg: string) {
+        super(msg)
+        this.name = 'ValidationError'
+    }
+}
 
 export class SubscriptionRequest {
 
@@ -36,11 +45,15 @@ export class SubscriptionRequest {
     /**
      * one notification channel MUST HAVE one id (probably reflective uri)
      * @param store rdf graph
+     * @throws ValidationError iff id field not singular
      * @returns TODO
      */
-    validateId = (store: $rdf.IndexedFormula) => {
+    validateId(store: $rdf.IndexedFormula): string {
         const NOTIF = $rdf.Namespace("https://www.w3.org/ns/solid/notification/v1/")
-        let quads = store.match(null, NOTIF('id')).map(statement => statement.subject)
-        return quads
+        let quads = store.match(null, NOTIF('id')).map(statement => statement.object)
+        if (quads.length != 1) {
+            throw new ValidationError('id could not be validated')
+        }
+        return quads[0].value
     }
 }

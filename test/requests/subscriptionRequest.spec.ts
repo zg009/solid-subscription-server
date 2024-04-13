@@ -27,8 +27,8 @@ loc:notification-channel
 
         jest.spyOn(subscriptionRequest, 'validateId')
     
-        const mockQuads = ''
+        const expectedId = 'http://localhost:6060/notification-channel'
 
-        expect(subscriptionRequest.validateId(store as $rdf.IndexedFormula)).toBe('')
+        expect(subscriptionRequest.validateId(store as $rdf.IndexedFormula)).toBe(expectedId)
     })
 })
