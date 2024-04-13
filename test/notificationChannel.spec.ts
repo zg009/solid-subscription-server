@@ -16,7 +16,14 @@ describe('NotificationChannel type', () => {
     })
 
     it('creates a new NotificationChannel doc', async () => {
-        const ncDoc = {}
+        const ncDoc = `@prefix loc: <http://localhost:6060/>.
+@prefix v1: <https://www.w3.org/ns/solid/notification/v1/>.
+
+loc:notification-channel
+    v1:channelType \"0\";
+    v1:id \"http://localhost:6060/notification-channel\";
+    v1:topic \"http://localhost:6060/topic/profile\".
+`
         const actual = await nc.generateDoc()
 
         expect(actual).toEqual(ncDoc)
