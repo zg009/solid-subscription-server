@@ -1,4 +1,5 @@
 import { ChannelType, notificationContext } from "./utils.js"
+import * as $rdf from "rdflib"
 
 export class NotificationChannel {
     id: string
@@ -36,26 +37,25 @@ export class NotificationChannel {
         return this
     }
 
-    generateDoc = () => {
-        let base = {
-            "@context": [notificationContext],
-            "id": this.id,
-            "type": this.type,
-            "topic": this.topics
+    generateDoc = async () => {
+        let store = $rdf.graph()
+        const NOTIF = $rdf.Namespace("https://www.w3.org/ns/solid/notification/v1/")
+        const node = $rdf.sym(this.id);
+        store.add(node, NOTIF("id"), $rdf.literal(this.id))
+        store.add(node, NOTIF("channelType"), $rdf.literal(this.type.toString()))
+        for (const topic of this.topics) {
+            store.add(node, NOTIF('topic'), topic)
         }
-        if (this.features) {
-            Object.assign(base, this.features)
-        }
-        if (this.receiveFrom) {
-            Object.assign(base, {"receiveFrom": this.receiveFrom})
-        }
-        if (this.sendTo) {
-            Object.assign(base, {"sendTo": this.sendTo})
-        }
-        if (this.sender) {
-            Object.assign(base, {"sender": this.sender})
-        }
-        return base 
+        return new Promise((resolve, reject) => {
+            $rdf.serialize(null, store, null, 'text/turtle', (err, str) => {
+                if (err) {
+                    reject(err)
+                } else {
+                    resolve(str)
+                }
+            })
+        })
+        
     }
 
 }

@@ -1,6 +1,6 @@
 import { SubscriptionService } from '../src/types/subscriptionService';
 import { ChannelType, notificationContext } from "../src/types/utils";
-import {expect } from "@jest/globals"
+import { expect } from "@jest/globals"
 
 describe('SubscriptionService type', () => {
     let ss: SubscriptionService;

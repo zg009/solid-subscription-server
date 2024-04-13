@@ -36,14 +36,12 @@ class LiveSolidSocket {
     }
 
     toggle() {
-        
         if (!this.active) {
             this.ws = new WebSocket(this.wsUrl)
         } else {
             this.ws!!.close()
         }
         this.active = !this.active
-        
     }
 }
 
