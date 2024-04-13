@@ -1,6 +1,7 @@
 import { Request } from 'express';
 import { SubscriptionRequest } from './../../src/requests/subscriptionRequest';
 import { jest, expect } from "@jest/globals"
+import * as $rdf from "rdflib"
 
 const mockValidateId = jest.fn().mockReturnValueOnce('')
 
@@ -28,6 +29,6 @@ loc:notification-channel
     
         const mockQuads = ''
 
-        expect(subscriptionRequest.validateId(store)).toBe('')
+        expect(subscriptionRequest.validateId(store as $rdf.IndexedFormula)).toBe('')
     })
 })
