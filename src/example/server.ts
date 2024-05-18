@@ -80,7 +80,7 @@ const createValidProfileTypesMiddleware = (header: string, values: string[] = JS
 }
 
 app.get(descriptionResourcePath, (req, res) => {
-  res.send(JSON.stringify(descriptionResource.generateDoc()))
+  // res.send(JSON.stringify(descriptionResource.generateDoc()))
 })
 
 app.get(subscriptionServicePath, (req, res) => {
