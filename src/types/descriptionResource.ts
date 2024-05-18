@@ -30,36 +30,43 @@ export class DescriptionResource {
         return this
     }
 
-    generateDoc = () => {
-        let base = {
-            "@context": [notificationContext],
-            "id": this.id,
-        }
-        if (this.subscriptions) {
-            base = Object.assign(base, {subscription : this.subscriptions})
-        }
-        if (this.channels) {
-            base = Object.assign(base, {channel : this.channels})
-        }
+    // generateDoc = () => {
+    //     let base = {
+    //         "@context": [notificationContext],
+    //         "id": this.id,
+    //     }
+    //     if (this.subscriptions) {
+    //         base = Object.assign(base, {subscription : this.subscriptions})
+    //     }
+    //     if (this.channels) {
+    //         base = Object.assign(base, {channel : this.channels})
+    //     }
 
-        return base;
-    }
+    //     return base;
+    // }
 
-    constructTurtle = (): Promise<string> =>  {
-        const doc = this.generateDoc()
+    createStore = async (): Promise<$rdf.Store> => {
         let kb = $rdf.graph()
         const nc = $rdf.Namespace(notificationContext)
-        const it = kb.sym(doc.id)
+        const it = kb.sym(this.id)
         if (this.channels) {
-            for (const channel in this.channels) {
-                kb.add(it, nc('channel'), channel)
+            for (const channel of this.channels) {
+                const ttl = await channel.generateDoc()
+                kb.add(it, nc('channel'), ttl)
             }
         }
         if (this.subscriptions) {
-            for (const subscription in this.subscriptions) {
-                kb.add(it, nc('subscription'), subscription)
+            for (const subscription of this.subscriptions) {
+                // kb = kb + subscription.createStore()
+                const ttl = await subscription.constructTurtle()
+                kb.add(it, nc('subscription'), ttl)
             }
         }
+        return kb
+    }
+
+    constructTurtle = async (): Promise<string> =>  {
+        const kb = await this.createStore()
         return new Promise((resolve, reject) => {
             $rdf.serialize(null, kb, undefined, 'text/turtle', (err, res) => {
                 if (err || (res === undefined)) {

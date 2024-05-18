@@ -39,7 +39,7 @@ export class NotificationChannel {
         return this
     }
 
-    generateDoc = async () => {
+    createStore = (): $rdf.Store => {
         let store = $rdf.graph()
         const NOTIF = $rdf.Namespace("https://www.w3.org/ns/solid/notification/v1/")
         const node = store.sym(this.id)
@@ -64,9 +64,14 @@ export class NotificationChannel {
                 store.add(node, NOTIF(`${feature}`), $rdf.literal(g))
             }
         }
+        return store
+    }
+
+    generateDoc = async (): Promise<string> => {
+        const store = this.createStore()
         return new Promise((resolve, reject) => {
             $rdf.serialize(null, store, null, 'text/turtle', (err, str) => {
-                if (err) {
+                if (err || str === undefined) {
                     reject(err)
                 } else {
                     resolve(str)

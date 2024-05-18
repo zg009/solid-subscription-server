@@ -1,6 +1,7 @@
 import { NotificationChannel } from "./notificationChannel.js"
 import { ChannelType, notificationContext } from "./utils.js"
 import express, { NextFunction, Request, Response } from "express"
+import * as $rdf from 'rdflib'
 
 export class SubscriptionService {
     id: string
@@ -20,16 +21,42 @@ export class SubscriptionService {
         return this
     }
 
-    generateDoc = () => {
-        let base = {
-            "@context": [notificationContext],
-            "id": this.id,
-            "channelType": this.channelType,
-        }
+    // generateDoc = () => {
+    //     let base = {
+    //         "@context": [notificationContext],
+    //         "id": this.id,
+    //         "channelType": this.channelType,
+    //     }
+    //     if (this.features) {
+    //         Object.assign(base, {"feature": this.features})
+    //     }
+    //     return base
+    // }
+
+    createStore = (): $rdf.Store => {
+        let kb = $rdf.graph()
+        const nc = $rdf.Namespace(notificationContext)
+        const it = kb.sym(this.id)
+        kb.add(it, nc('channelType'), this.channelType)
         if (this.features) {
-            Object.assign(base, {"feature": this.features})
+            for (const feature in this.features) {
+                kb.add(it, nc('feature'), feature)
+            }
         }
-        return base
+        return kb
+    }
+
+    constructTurtle = (): Promise<string> => {
+        const kb = this.createStore()
+        return new Promise((resolve, reject) => {
+            $rdf.serialize(null, kb, undefined, 'text/turtle', (err, res) => {
+                if (err || (res === undefined)) {
+                    reject(err)
+                } else {
+                    resolve(res)
+                }
+            })
+        })
     }
 
     validateFromParams = (req: Request<{}, {}, NotificationChannel>) => {
