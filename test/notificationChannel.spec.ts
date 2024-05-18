@@ -20,7 +20,7 @@ describe('NotificationChannel type', () => {
 @prefix v1: <https://www.w3.org/ns/solid/notification/v1/>.
 
 loc:notification-channel
-    v1:channelType \"0\";
+    v1:channelType \"WebSocketChannel2023\";
     v1:id \"http://localhost:6060/notification-channel\";
     v1:topic \"http://localhost:6060/topic/profile\".
 `

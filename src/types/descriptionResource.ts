@@ -1,6 +1,8 @@
 import { notificationContext } from "./utils.js"
 import { NotificationChannel } from "./notificationChannel.js"
 import { SubscriptionService } from "./subscriptionService.js"
+import { writeFile } from "node:fs/promises"
+import * as $rdf from 'rdflib'
 
 
 export class DescriptionResource {
@@ -34,12 +36,53 @@ export class DescriptionResource {
             "id": this.id,
         }
         if (this.subscriptions) {
-            Object.assign(base, {"subscription" : this.subscriptions})
+            base = Object.assign(base, {subscription : this.subscriptions})
         }
         if (this.channels) {
-            Object.assign(base, {"channel" : this.channels})
+            base = Object.assign(base, {channel : this.channels})
         }
 
         return base;
+    }
+
+    constructTurtle = (): Promise<string> =>  {
+        const doc = this.generateDoc()
+        let kb = $rdf.graph()
+        const nc = $rdf.Namespace(notificationContext)
+        const it = kb.sym(doc.id)
+        if (this.channels) {
+            for (const channel in this.channels) {
+                kb.add(it, nc('channel'), channel)
+            }
+        }
+        if (this.subscriptions) {
+            for (const subscription in this.subscriptions) {
+                kb.add(it, nc('subscription'), subscription)
+            }
+        }
+        return new Promise((resolve, reject) => {
+            $rdf.serialize(null, kb, undefined, 'text/turtle', (err, res) => {
+                if (err || (res === undefined)) {
+                    reject(err)
+                } else {
+                    resolve(res)
+                }
+            })
+        })
+        
+    }
+
+    writeToFileSystem = async (relativePath: string, fullPath?: string) => {
+        try {
+            const out = await this.constructTurtle()
+            if (fullPath) {
+                await writeFile(fullPath, out)
+                return;
+            }
+            await writeFile(relativePath, out)
+            return
+        } catch (err: any) {
+            console.error(err)
+        }
     }
 }
